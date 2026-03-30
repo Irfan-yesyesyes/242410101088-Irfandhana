@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistem Manajemen Barang</title>
+
+  <style>
+    :root {
+      --bg:        #F5F5F5;
+      --blush:     #FFCEE3;
+      --pink:      #FF85BB;
+      --navy:      #021A54;
+      --white:     #ffffff;
+      --text:      #1a1a2e;
+      --muted:     #6b7280;
+      --radius:    12px;
+      --radius-lg: 20px;
+      --shadow:    0 4px 24px rgba(2,26,84,.10);
+      --shadow-lg: 0 8px 40px rgba(2,26,84,.18);
+      --transition: all .3s cubic-bezier(.4,0,.2,1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding-top: 80px; 
+    }
+    @keyframes fadeSlideDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse-ring {
+      0%   { box-shadow: 0 0 0 0 rgba(255,133,187,.5); }
+      70%  { box-shadow: 0 0 0 10px rgba(255,133,187,0); }
+      100% { box-shadow: 0 0 0 0 rgba(255,133,187,0); }
+    }
+
+    @keyframes shimmer {
+      0%   { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+
+    /* ============================
+       NAVBAR — FIXED + FLEXBOX
+    ============================ */
+    .navbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1000;
+      background: var(--navy);
+      backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      height: 72px;
+      box-shadow: 0 2px 20px rgba(2,26,84,.4);
+      animation: fadeSlideDown .5s ease both;
+    }
+
+    .navbar__brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      text-decoration: none;
+    }
+
+    .navbar__logo {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2.5px solid var(--pink);
+      animation: pulse-ring 2.5s infinite;
+    }
+
+    .navbar__title {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 1.15rem;
+      color: var(--white);
+      letter-spacing: .02em;
+      line-height: 1.2;
+    }
+
+    .navbar__title span {
+      display: block;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: .65rem;
+      font-weight: 500;
+      color: var(--blush);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .navbar__nav {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      list-style: none;
+    }
+
+    .navbar__nav a {
+      display: block;
+      padding: 8px 16px;
+      color: rgba(255,255,255,.75);
+      text-decoration: none;
+      font-size: .85rem;
+      font-weight: 500;
+      border-radius: 8px;
+      transition: var(--transition);
+      position: relative;
+    }
+
+    .navbar__nav a::after {
+      content: '';
+      position: absolute;
+      bottom: 4px; left: 50%;
+      transform: translateX(-50%) scaleX(0);
+      width: 20px; height: 2px;
+      background: var(--pink);
+      border-radius: 2px;
+      transition: transform .25s ease;
+    }
+
+    .navbar__nav a:hover {
+      color: var(--white);
+      background: rgba(255,255,255,.08);
+    }
+
+    .navbar__nav a:hover::after { transform: translateX(-50%) scaleX(1); }
+
+    .navbar__nav a.active {
+      color: var(--navy);
+      background: var(--pink);
+      font-weight: 600;
+    }
+
+    .navbar__hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 6px;
+    }
+
+    .navbar__hamburger span {
+      display: block;
+      width: 24px; height: 2px;
+      background: var(--white);
+      border-radius: 2px;
+      transition: var(--transition);
+    }
+
+    /* ============================
+       HERO SECTION — GRADIENT + OVERLAY
+    ============================ */
+    .hero {
+      position: relative;
+      overflow: hidden;
+      min-height: 340px;
+      display: flex;
+      align-items: center;
+      background: linear-gradient(135deg, var(--navy) 0%, #0d3480 45%, #1a4fa0 70%, #2c5fb5 100%);
+      padding: 60px 40px;
+      animation: fadeSlideUp .6s .1s ease both;
+    }
+
+    .hero__shapes {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .hero__shapes::before {
+      content: '';
+      position: absolute;
+      top: -80px; right: -80px;
+      width: 400px; height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,133,187,.25) 0%, transparent 70%);
+    }
+
+    .hero__shapes::after {
+      content: '';
+      position: absolute;
+      bottom: -60px; left: 10%;
+      width: 280px; height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,206,227,.12) 0%, transparent 70%);
+    }
+
+    .hero__content {
+      position: relative;
+      z-index: 1;
+      max-width: 680px;
+    }
+
+    .hero__badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,133,187,.2);
+      border: 1px solid rgba(255,133,187,.4);
+      color: var(--blush);
+      font-size: .75rem;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 50px;
+      margin-bottom: 18px;
+    }
+
+    .hero__badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--pink);
+      animation: pulse-ring 1.8s infinite;
+    }
+
+    .hero h1 {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      color: var(--white);
+      line-height: 1.2;
+      margin-bottom: 14px;
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      color: var(--pink);
+    }
+
+    .hero p {
+      color: rgba(255,255,255,.7);
+      font-size: .95rem;
+      max-width: 480px;
+    }
+
+    /* ============================
+       STATS GRID — 4 COL / 2 / 1
+    ============================ */
+    .stats-section {
+      padding: 40px;
+      animation: fadeSlideUp .6s .2s ease both;
+    }
+
+    .stats-section h2 {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 1.4rem;
+      color: var(--navy);
+      margin-bottom: 20px;
+    }
+
+    /* Mobile-first: 1 column */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .stat-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,206,227,.4);
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+      cursor: default;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--pink), var(--blush));
+    }
+
+    .stat-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--pink);
+    }
+
+    .stat-card__icon {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--blush), var(--pink));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      margin-bottom: 14px;
+    }
+
+    .stat-card__value {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--navy);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .stat-card__label {
+      font-size: .8rem;
+      color: var(--muted);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .main-layout {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      padding: 0 40px 60px;
+      animation: fadeSlideUp .6s .3s ease both;
+    }
+
+    .sidebar {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,206,227,.4);
+      height: fit-content;
+    }
+
+    .sidebar h3 {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 1.1rem;
+      color: var(--navy);
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--blush);
+    }
+
+    .filter-group {
+      margin-bottom: 24px;
+    }
+
+    .filter-group__label {
+      font-size: .75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      font-size: .88rem;
+      color: var(--text);
+      transition: color .2s;
+    }
+
+    .checkbox-item:hover { color: var(--navy); }
+
+    .checkbox-item input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 18px; height: 18px;
+      border: 2px solid #d1d5db;
+      border-radius: 5px;
+      cursor: pointer;
+      position: relative;
+      transition: var(--transition);
+      flex-shrink: 0;
+    }
+
+    .checkbox-item input[type="checkbox"]:checked {
+      background: var(--pink);
+      border-color: var(--pink);
+    }
+
+    .checkbox-item input[type="checkbox"]:checked::after {
+      content: '';
+      position: absolute;
+      top: 2px; left: 5px;
+      width: 5px; height: 9px;
+      border: 2px solid white;
+      border-top: none;
+      border-left: none;
+      transform: rotate(45deg);
+    }
+
+    .checkbox-item input[type="checkbox"]:hover:not(:checked) {
+      border-color: var(--pink);
+    }
+
+    .filter-search {
+      width: 100%;
+      padding: 9px 14px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: .85rem;
+      background: var(--bg);
+      color: var(--text);
+      transition: var(--transition);
+      outline: none;
+    }
+
+    .filter-search:focus {
+      border-color: var(--pink);
+      background: var(--white);
+      box-shadow: 0 0 0 3px rgba(255,133,187,.2);
+    }
+
+    .filter-btn {
+      width: 100%;
+      padding: 10px;
+      background: linear-gradient(135deg, var(--navy), #0d3480);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: .85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      margin-top: 8px;
+    }
+
+    .filter-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(2,26,84,.35);
+    }
+
+    .content-area {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .form-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,206,227,.4);
+    }
+
+    .form-card h2 {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 1.3rem;
+      color: var(--navy);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .form-card h2::before {
+      content: '';
+      display: block;
+      width: 4px; height: 22px;
+      background: linear-gradient(180deg, var(--pink), var(--blush));
+      border-radius: 3px;
+    }
+
+    /* Form search bar */
+    .search-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .search-bar input {
+      flex: 1;
+      padding: 12px 18px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: .9rem;
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .search-bar input:focus {
+      border-color: var(--pink);
+      background: var(--white);
+      box-shadow: 0 0 0 4px rgba(255,133,187,.15);
+    }
+
+    .btn-search {
+      padding: 12px 22px;
+      background: linear-gradient(135deg, var(--pink), #ff5fa0);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: .9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      white-space: nowrap;
+    }
+
+    .btn-search:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255,133,187,.4);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: .8rem;
+      font-weight: 600;
+      color: var(--navy);
+      letter-spacing: .04em;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      padding: 11px 16px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: .88rem;
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+      transition: var(--transition);
+      width: 100%;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--pink);
+      background: var(--white);
+      box-shadow: 0 0 0 4px rgba(255,133,187,.15);
+    }
+
+    .form-group textarea { resize: vertical; min-height: 80px; }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      padding: 12px 28px;
+      background: linear-gradient(135deg, var(--navy), #1a4fa0);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: .9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(2,26,84,.35);
+    }
+
+    .btn-secondary {
+      padding: 12px 24px;
+      background: transparent;
+      color: var(--navy);
+      border: 1.5px solid #d1d5db;
+      border-radius: var(--radius);
+      font-family: inherit;
+      font-size: .9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--pink);
+      color: var(--pink);
+      background: rgba(255,133,187,.05);
+    }
+
+    .table-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,206,227,.4);
+      overflow: hidden;
+    }
+
+    .table-card h2 {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 1.3rem;
+      color: var(--navy);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .table-card h2::before {
+      content: '';
+      display: block;
+      width: 4px; height: 22px;
+      background: linear-gradient(180deg, var(--pink), var(--blush));
+      border-radius: 3px;
+    }
+
+    .table-wrapper { overflow-x: auto; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .85rem;
+    }
+
+    thead th {
+      background: var(--navy);
+      color: var(--white);
+      padding: 14px 16px;
+      text-align: left;
+      font-weight: 600;
+      font-size: .78rem;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    thead th:first-child { border-radius: 8px 0 0 0; }
+    thead th:last-child  { border-radius: 0 8px 0 0; }
+
+    tbody tr:nth-child(even) { background: rgba(255,206,227,.18); }
+    tbody tr:nth-child(odd)  { background: var(--white); }
+
+    tbody tr {
+      border-bottom: 1px solid rgba(229,231,235,.8);
+      transition: var(--transition);
+    }
+
+    tbody tr:hover {
+      background: rgba(255,133,187,.12) !important;
+      transform: scale(1.004);
+    }
+
+    tbody td {
+      padding: 13px 16px;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 50px;
+      font-size: .72rem;
+      font-weight: 600;
+    }
+
+    .badge--elektronik { background: rgba(2,26,84,.08); color: var(--navy); }
+    .badge--alat-tulis { background: rgba(255,133,187,.15); color: #c0366b; }
+    .badge--furnitur   { background: rgba(255,206,227,.5); color: #8b3a62; }
+
+    footer {
+      background: var(--navy);
+      color: var(--white);
+      padding: 60px 40px 30px;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 36px;
+      margin-bottom: 40px;
+    }
+
+    .footer-col h4 {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 1.05rem;
+      color: var(--pink);
+      margin-bottom: 16px;
+    }
+
+    .footer-col p,
+    .footer-col a {
+      font-size: .85rem;
+      color: rgba(255,255,255,.65);
+      line-height: 1.8;
+      text-decoration: none;
+      display: block;
+      transition: color .2s;
+    }
+
+    .footer-col a:hover { color: var(--blush); }
+
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .footer-logo img {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid rgba(255,133,187,.5);
+    }
+
+    .footer-logo span {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 1rem;
+      color: var(--white);
+    }
+
+    .footer-divider {
+      border: none;
+      border-top: 1px solid rgba(255,255,255,.1);
+      margin-bottom: 20px;
+    }
+
+    .footer-bottom {
+      text-align: center;
+      font-size: .8rem;
+      color: rgba(255,255,255,.4);
+    }
+
+    .footer-bottom span { color: var(--pink); }
+
+    @media (min-width: 640px) {
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .form-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .footer-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (min-width: 900px) {
+      .main-layout {
+        flex-direction: row;
+        align-items: flex-start;
+      }
+
+      .sidebar {
+        width: 260px;
+        flex-shrink: 0;
+        position: sticky;
+        top: 92px;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .footer-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .navbar { padding: 0 20px; }
+
+      .navbar__nav {
+        display: none;
+        position: absolute;
+        top: 72px; left: 0; right: 0;
+        background: var(--navy);
+        flex-direction: column;
+        padding: 16px;
+        gap: 4px;
+        border-top: 1px solid rgba(255,255,255,.1);
+      }
+
+      .navbar__nav.open { display: flex; }
+
+      .navbar__hamburger { display: flex; }
+
+      .hero { padding: 40px 20px; }
+
+      .stats-section,
+      .main-layout { padding-left: 20px; padding-right: 20px; }
+
+      footer { padding: 40px 20px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="#" class="navbar__brand">
+      <img src="Logo.jpeg" alt="Logo" class="navbar__logo" id="navLogo">
+      <div class="navbar__title">
+        DiKeDim
+        <span>Sistem Manajemen Barang</span>
+      </div>
+    </a>
+
+    <button class="navbar__hamburger" onclick="toggleNav()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+
+    <ul class="navbar__nav" id="navMenu">
+      <li><a href="#" class="active">Beranda</a></li>
+      <li><a href="#form-section">Barang Masuk</a></li>
+      <li><a href="#table-section">Barang Keluar</a></li>
+      <li><a href="#table-section">Laporan</a></li>
+      <li><a href="#">Pengaturan</a></li>
+    </ul>
+  </nav>
+
+  <section class="hero">
+    <div class="hero__shapes"></div>
+    <div class="hero__content">
+      <div class="hero__badge">Sistem Aktif</div>
+      <h1>Kelola Inventaris<br><em>Lebih Cerdas</em></h1>
+      <p>Platform manajemen barang gudang yang terintegrasi. Pantau stok, lacak transaksi, dan kelola supplier dalam satu sistem.</p>
+    </div>
+  </section>
+
+  <section class="stats-section">
+    <h2>Statistik Gudang</h2>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-card__icon">📦</div>
+        <div class="stat-card__value">248</div>
+        <div class="stat-card__label">Total Barang</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__icon">🗂️</div>
+        <div class="stat-card__value">12</div>
+        <div class="stat-card__label">Kategori</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__icon">📊</div>
+        <div class="stat-card__value">1.840</div>
+        <div class="stat-card__label">Total Stok (Unit)</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card__icon">💰</div>
+        <div class="stat-card__value">42 Jt</div>
+        <div class="stat-card__label">Nilai Stok (Rp)</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="main-layout">
+
+    <aside class="sidebar">
+      <h3>🔍 Filter Data</h3>
+
+      <div class="filter-group">
+        <div class="filter-group__label">Cari Barang</div>
+        <input type="text" class="filter-search" placeholder="Nama atau kode...">
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-group__label">Kategori</div>
+        <label class="checkbox-item">
+          <input type="checkbox" checked> Elektronik
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox" checked> Alat Tulis
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox"> Furnitur
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox"> Pakaian
+        </label>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-group__label">Supplier</div>
+        <label class="checkbox-item">
+          <input type="checkbox" checked> PT. Maju Bersama
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox"> CV. Sumber Jaya
+        </label>
+        <label class="checkbox-item">
+          <input type="checkbox"> UD. Berkah Niaga
+        </label>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-group__label">Rentang Tanggal</div>
+        <input type="date" class="filter-search" style="margin-bottom:8px;">
+        <input type="date" class="filter-search">
+      </div>
+
+      <button class="filter-btn">Terapkan Filter</button>
+      <button class="filter-btn" style="background:transparent;color:var(--muted);border:1.5px solid #e5e7eb;margin-top:8px;">Reset</button>
+    </aside>
+
+    <div class="content-area">
+
+      <div class="form-card" id="form-section">
+        <h2>Form Input Barang Masuk</h2>
+
+        <div class="search-bar">
+          <input type="text" placeholder="Cari barang yang sudah ada...">
+          <button class="btn-search">🔍 Cari</button>
+        </div>
+
+        <form action="#" method="POST">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="kode">Kode Barang</label>
+              <input type="text" id="kode" name="kode" placeholder="Cth: BRG-001">
+            </div>
+            <div class="form-group">
+              <label for="nama">Nama Barang</label>
+              <input type="text" id="nama" name="nama" placeholder="Nama barang">
+            </div>
+            <div class="form-group">
+              <label for="kategori">Kategori</label>
+              <select id="kategori" name="kategori">
+                <option value="">Pilih Kategori</option>
+                <option>Elektronik</option>
+                <option>Alat Tulis</option>
+                <option>Furnitur</option>
+                <option>Pakaian</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="satuan">Satuan</label>
+              <select id="satuan" name="satuan">
+                <option value="">Pilih Satuan</option>
+                <option>Pcs</option>
+                <option>Unit</option>
+                <option>Kg</option>
+                <option>Liter</option>
+                <option>Box</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="jumlah">Jumlah</label>
+              <input type="number" id="jumlah" name="jumlah" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label for="harga">Harga Satuan (Rp)</label>
+              <input type="number" id="harga" name="harga" placeholder="0">
+            </div>
+            <div class="form-group">
+              <label for="tanggal">Tanggal Masuk</label>
+              <input type="date" id="tanggal" name="tanggal">
+            </div>
+            <div class="form-group">
+              <label for="supplier">Supplier</label>
+              <select id="supplier" name="supplier">
+                <option value="">Pilih Supplier</option>
+                <option>PT. Maju Bersama</option>
+                <option>CV. Sumber Jaya</option>
+                <option>UD. Berkah Niaga</option>
+              </select>
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+              <label for="foto">Foto Barang</label>
+              <input type="file" id="foto" name="foto" accept="image/*">
+            </div>
+            <div class="form-group" style="grid-column:1/-1">
+              <label for="keterangan">Keterangan</label>
+              <textarea id="keterangan" name="keterangan" placeholder="Catatan tambahan..."></textarea>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">💾 Simpan Barang</button>
+            <button type="reset" class="btn-secondary">Reset</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="table-card" id="table-section">
+        <h2>Daftar Barang Masuk</h2>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Kode</th>
+                <th>Nama Barang</th>
+                <th>Kategori</th>
+                <th>Jumlah</th>
+                <th>Satuan</th>
+                <th>Harga Satuan</th>
+                <th>Tanggal</th>
+                <th>Supplier</th>
+                <th>Keterangan</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><b>BRG-001</b></td>
+                <td>Laptop Lenovo IdeaPad</td>
+                <td><span class="badge badge--elektronik">Elektronik</span></td>
+                <td>10</td><td>Unit</td>
+                <td>Rp 7.500.000</td>
+                <td>01/03/2026</td>
+                <td>PT. Maju Bersama</td>
+                <td>Kondisi baru</td>
+              </tr>
+              <tr>
+                <td><b>BRG-002</b></td>
+                <td>Kertas HVS A4 80gr</td>
+                <td><span class="badge badge--alat-tulis">Alat Tulis</span></td>
+                <td>50</td><td>Rim</td>
+                <td>Rp 55.000</td>
+                <td>02/03/2026</td>
+                <td>CV. Sumber Jaya</td>
+                <td>Stok reguler</td>
+              </tr>
+              <tr>
+                <td><b>BRG-003</b></td>
+                <td>Kursi Kantor Ergonomis</td>
+                <td><span class="badge badge--furnitur">Furnitur</span></td>
+                <td>5</td><td>Unit</td>
+                <td>Rp 1.200.000</td>
+                <td>03/03/2026</td>
+                <td>UD. Berkah Niaga</td>
+                <td>Warna hitam</td>
+              </tr>
+              <tr>
+                <td><b>BRG-004</b></td>
+                <td>Printer Canon PIXMA</td>
+                <td><span class="badge badge--elektronik">Elektronik</span></td>
+                <td>8</td><td>Unit</td>
+                <td>Rp 850.000</td>
+                <td>04/03/2026</td>
+                <td>PT. Maju Bersama</td>
+                <td>Termasuk tinta</td>
+              </tr>
+              <tr>
+                <td><b>BRG-005</b></td>
+                <td>Spidol Whiteboard Pilot</td>
+                <td><span class="badge badge--alat-tulis">Alat Tulis</span></td>
+                <td>100</td><td>Pcs</td>
+                <td>Rp 12.000</td>
+                <td>05/03/2026</td>
+                <td>CV. Sumber Jaya</td>
+                <td>4 warna tersedia</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-col">
+        <div class="footer-logo">
+          <img src="Logo.jpeg" alt="Logo" id="footerLogo">
+          <span>DiKeDim</span>
+        </div>
+        <p>Platform manajemen barang gudang yang terintegrasi dan mudah digunakan untuk bisnis modern.</p>
+      </div>
+
+      <div class="footer-col">
+        <h4>Navigasi</h4>
+        <a href="#">Beranda</a>
+        <a href="#">Barang Masuk</a>
+        <a href="#">Barang Keluar</a>
+        <a href="#">Laporan</a>
+        <a href="#">Pengaturan</a>
+      </div>
+
+      <div class="footer-col">
+        <h4>Kontak & Info</h4>
+        <p>📧 admin@DiKeDim.id</p>
+        <p>📞 (0331) 123-4567</p>
+        <p>📍 Jember, Jawa Timur</p>
+        <p style="margin-top:10px;">Versi 2.0.0 &bull; 2026</p>
+      </div>
+    </div>
+
+    <hr class="footer-divider">
+    <p class="footer-bottom">&copy; 2026 <span>Sistem Manajemen Barang Gudang</span>. All rights reserved.</p>
+  </footer>
+
+  <script>
+    function toggleNav() {
+      document.getElementById('navMenu').classList.toggle('open');
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+      const logoSrc =
+      document.getElementById('navLogo').src = logoSrc;
+      document.getElementById('footerLogo').src = logoSrc;
+    });
+  </script>
+</body>
+</html>
